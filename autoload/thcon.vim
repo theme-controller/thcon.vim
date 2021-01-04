@@ -55,6 +55,15 @@ func s:on_stdout(chan, msg)
             execute "colorscheme " . newcolor
         endif
     endif
+
+    if has_key(req, "variables")
+        let variables = req.variables
+        if type(variables) == type({})
+            for [key, value] in items(variables)
+                let { key } = value
+            endfor
+        endif
+    endif
 endfunc
 
 func s:on_stderr(chan, msg)
