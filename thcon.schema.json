@@ -1,0 +1,38 @@
+{
+    "title": "thcon.vim payload",
+    "description": "Interface for interacting with thcon.vim via named pipe",
+    "type": "object",
+    "properties": {
+        "colorscheme": {
+            "type": "string",
+            "$comment": "Triggers `:colorscheme $value`"
+        },
+        "variables": {
+            "type": "object",
+            "$comment": "Triggers `let $key=$value`"
+        },
+        "options": {
+            "type": "object",
+            "$comment": "Triggers `set $key=$value`, or `set $key`/`set no$key` for boolean values"
+        }
+    },
+    "examples": [
+        {},
+        { "colorscheme": "blue" },
+        {
+            "options": {
+                "relnum": true
+            }
+        },
+        {
+            "colorscheme": "elflord",
+            "variables": {
+                "g:airline_theme": "solarized"
+            },
+            "options": {
+                "background": "dark",
+                "number": false
+            }
+        }
+    ]
+}
