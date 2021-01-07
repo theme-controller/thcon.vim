@@ -56,7 +56,7 @@ func s:on_stdout(chan, msg)
         endif
     endif
 
-    if has_key(req, "variables")
+    if has_key(req, "let")
         let variables = req.variables
         if type(variables) == type({})
             for [key, value] in items(variables)
@@ -64,6 +64,57 @@ func s:on_stdout(chan, msg)
             endfor
         endif
     endif
+
+    for set_cmd in ["set", "setglobal"]
+        if has_key(req, set_cmd)
+            let options = req[set_cmd]
+            if type(options) == type({})
+                echom "Found " . set_cmd
+                for [key, value] in items(options)
+                    call s:set(set_cmd, key, value)
+                endfor
+            endif
+        endif
+    endfor
+endfunc
+
+" Calls :set key=value, :set key, :set nokey -- or their :setglobal variants --
+" safely, avoiding arbitrary command injection.
+" @param {string} set_cmd - one of "set" | "setglobal"
+" @param {string} key - the name of the option to be set
+" @param {*} value - the value to assign to the option
+func s:set(set_cmd, key, value)
+    if a:set_cmd != "set" && a:set_cmd != "setglobal"
+        echom "[s:set] invalid set_cmd '" . a:set_cmd . "'"
+        return
+    endif
+
+    let safe_key = s:execescape(a:key)
+
+    if a:value == v:true
+        exec a:set_cmd safe_key
+    elseif a:value == v:false
+        exec a:set_cmd "no".safe_key
+    else
+        if type(a:value) == type("")
+            let safe_value = s:execescape(a:value)
+            exec a:set_cmd safe_key."=".safe_value
+        else
+            exec a:set_cmd safe_key."=".a:value
+        endif
+    endif
+endfunc
+
+" Makes a string safe for use with :exec, preventing arbitrary command injection
+" @param {string} str - the string to make safe for use with a dynamic :exec
+" @returns {string} - the substring starting at the beginning of str, running until either a command
+"                     separator or the end of the string is found.
+func s:execescape(str)
+    if type(str) != type("")
+        return str
+    endif
+
+    return trim(get(split(a:str, "[|\n]"), 0, ""))
 endfunc
 
 func s:on_stderr(chan, msg)
@@ -81,9 +132,13 @@ func! thcon#listen()
     \ })
 endfunc
 
+func! s:on_vimleave()
+    job_stop(s:job)
+endfunc
+
 augroup thcon
     autocmd!
-    autocmd VimLeave * job_stop(s:job)
+    autocmd VimLeave * call s:on_vimleave()
 augroup end
 
 " restore 'compatible' settings; copied verbatim from `:h write-plugin`

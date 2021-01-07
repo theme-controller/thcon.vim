@@ -7,13 +7,17 @@
             "type": "string",
             "$comment": "Triggers `:colorscheme $value`"
         },
-        "variables": {
+        "let": {
             "type": "object",
             "$comment": "Triggers `let $key=$value`"
         },
-        "options": {
+        "set": {
             "type": "object",
             "$comment": "Triggers `set $key=$value`, or `set $key`/`set no$key` for boolean values"
+        },
+        "setglobal": {
+            "type": "object",
+            "$comment": "Triggers `setglobal $key=$value`, or `setglobal $key`/`set no$key` for boolean values"
         }
     },
     "examples": [
@@ -26,12 +30,15 @@
         },
         {
             "colorscheme": "elflord",
-            "variables": {
+            "let": {
                 "g:airline_theme": "solarized"
             },
-            "options": {
+            "set": {
                 "background": "dark",
-                "number": false
+                "number": true
+            },
+            "setglobal": {
+                "verbose": 9
             }
         }
     ]
