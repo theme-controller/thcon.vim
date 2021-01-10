@@ -20,32 +20,29 @@ set cpo&vim
 
 let g:thcon_debug = v:false
 
+function! s:debug(...)
+    if g:thcon_debug
+        echom join(a:000)
+    endif
+endfunc
+
 " figure out where this script is installed, so we can reference other files included with a
 " this plugin
 let s:plugindir = resolve(expand('<sfile>:p:h'))
-
-if has("nvim")
-    echom "neovim isn't yet supported"
-
-    " restore 'compatible' settings; copied verbatim from `:h write-plugin`
-    let &cpo = s:save_cpo
-    unlet s:save_cpo
-
-    finish
-endif
 
 " Handles lines printed by thcon-vim.sh
 " Lines that aren't valid JSON are ignored.  Lines that are valid JSON objects are used to
 " change colorschemes and set other arbitrary variables.  See ../thcon.schema.json for that
 " object's schema.
-func s:on_stdout(chan, msg)
-    echom "[s:on_stdout] msg " . a:msg
+func s:on_stdout(msg)
+    call s:debug("[s:on_stdout] msg ", a:msg)
     let v:errmsg = ""
     silent! let req = json_decode(a:msg)
+    call s:debug("[s:on_stdout] parsed = ", req)
 
     if v:errmsg != "" || type(req) != type({})
-        echom "[s:on_stdout] err = " v:errmsg
-        echom "[s:on_stdout] bailing"
+        call s:debug("[s:on_stdout] err = ", v:errmsg)
+        call s:debug("[s:on_stdout] bailing")
         return
     endif
 
@@ -69,7 +66,6 @@ func s:on_stdout(chan, msg)
         if has_key(req, set_cmd)
             let options = req[set_cmd]
             if type(options) == type({})
-                echom "Found " . set_cmd
                 for [key, value] in items(options)
                     call s:set(set_cmd, key, value)
                 endfor
@@ -110,35 +106,52 @@ endfunc
 " @returns {string} - the substring starting at the beginning of str, running until either a command
 "                     separator or the end of the string is found.
 func s:execescape(str)
-    if type(str) != type("")
-        return str
+    if type(a:str) != type("")
+        return a:str
     endif
 
     return trim(get(split(a:str, "[|\n]"), 0, ""))
 endfunc
 
-func s:on_stderr(chan, msg)
-    if g:thcon_debug
-        echom "[OnThconStderr] " . a:msg
-    endif
+func s:on_stderr(msg)
+    echom "[on_stderr] " string(a:msg)
 endfunc
 
 func! thcon#listen()
     let script = s:plugindir . "/thcon-vim.sh"
-    let s:job = job_start(script, {
-    \   "out_cb": function("s:on_stdout"),
-    \   "err_cb": function("s:on_stderr"),
-    \   "env": { "DEBUG": "1" }
-    \ })
+    if has("nvim")
+        let job_options = { "on_stdout": { job, data, event, -> s:on_stdout(data) } }
+        if g:thcon_debug
+            call extend(job_options, {
+            \   "on_stderr": { job, data, event, -> s:on_stderr(data) },
+            \   "env": { "DEBUG": "1" }
+            \ })
+        endif
+        let s:job = jobstart(script, job_options)
+    else
+        let job_options = { "out_cb": { chan, msg -> s:on_stdout(msg) } }
+        if g:thcon_debug
+            call extend(job_options, {
+            \   "err_cb": { chan, msg -> s:on_stderr(msg) },
+            \   "env": { "DEBUG": "1" }
+            \ })
+        endif
+        let s:job = job_start(script, job_options)
+    endif
 endfunc
 
 func! s:on_vimleave()
-    job_stop(s:job)
+    if has("nvim")
+        call jobstop(s:job)
+    else
+        call s:debug("[s:on_vimleave] Stopping job: ", s:job)
+        call job_stop(s:job)
+    endif
 endfunc
 
 augroup thcon
     autocmd!
-    autocmd VimLeave * call s:on_vimleave()
+    autocmd VimLeavePre * call s:on_vimleave()
 augroup end
 
 " restore 'compatible' settings; copied verbatim from `:h write-plugin`
