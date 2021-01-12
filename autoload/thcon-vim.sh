@@ -17,6 +17,8 @@ PIPE="$PIPES_DIR/$$"
 # shellcheck disable=SC2064
 trap "rm -f $PIPE; trap - EXIT; exit" EXIT INT HUP TERM
 
-mkdir -p "$PIPES_DIR"
+if [ ! -d "$PIPES_DIR" ]; then
+    mkdir -p "$PIPES_DIR"
+fi
 mkfifo "$PIPE"
 tail -f "$PIPE"
