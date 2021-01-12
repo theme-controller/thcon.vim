@@ -5,7 +5,13 @@ fi
 
 set -e
 
-PIPES_DIR="$HOME/.local/share/thcon/"
+CALLING_VIM=$(basename "$VIM")
+if [ -z "$CALLING_VIM" ]; then
+    >&2 echo "thcon-vim.sh must be called from a vim/neovim instance (or with \$VIM set for development)"
+    exit 1;
+fi
+
+PIPES_DIR="$HOME/.local/share/thcon/$CALLING_VIM"
 PIPE="$PIPES_DIR/$$"
 
 # shellcheck disable=SC2064
