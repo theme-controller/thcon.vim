@@ -56,9 +56,9 @@ func s:on_stdout(msg)
     endif
 
     if has_key(req, "let")
-        let variables = req.variables
-        if type(variables) == type({})
-            for [key, value] in items(variables)
+        let lets = req.let
+        if type(lets) == type({})
+            for [key, value] in items(lets)
                 let { key } = value
             endfor
         endif
