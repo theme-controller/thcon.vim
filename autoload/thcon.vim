@@ -47,8 +47,10 @@ func s:on_stdout(msg)
     endif
 
     if has_key(req, "colorscheme")
-        let newcolor = req.colorscheme
+        let newcolor = s:execescape(req.colorscheme)
+        call s:debug("[s:on_stdout] colorscheme = " . newcolor)
         if type(newcolor) == type("") && newcolor != ""
+            call s:debug("[s:on_stdout] setting colorscheme...")
             execute "colorscheme " . newcolor
         endif
     endif
