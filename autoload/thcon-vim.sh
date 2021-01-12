@@ -21,4 +21,6 @@ if [ ! -d "$PIPES_DIR" ]; then
     mkdir -p "$PIPES_DIR"
 fi
 mkfifo "$PIPE"
+chmod 600 "$PIPE"
+
 tail -f "$PIPE"
