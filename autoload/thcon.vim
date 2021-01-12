@@ -18,7 +18,9 @@ endif
 let s:save_cpo = &cpo
 set cpo&vim
 
-let g:thcon_debug = v:false
+if !exists("g:thcon_debug")
+    let g:thcon_debug = v:false
+endif
 
 function! s:debug(...)
     if g:thcon_debug
