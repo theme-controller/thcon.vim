@@ -133,8 +133,7 @@ func! thcon#listen()
     endif
 
     let s:job = thcon#job#start(argv, {
-    \ "on_stdout": function("s:on_stdout"),
-    \ "on_stderr": function("s:on_stderr"),
+    \   "on_stdout": function("s:on_stdout"),
     \ })
 endfunc
 
