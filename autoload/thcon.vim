@@ -36,10 +36,11 @@ let s:plugindir = resolve(expand('<sfile>:p:h'))
 " Lines that aren't valid JSON are ignored.  Lines that are valid JSON objects are used to
 " change colorschemes and set other arbitrary variables.  See ../thcon.schema.json for that
 " object's schema.
-func s:on_stdout(msg)
-    call s:debug("[s:on_stdout] msg ", a:msg)
+func s:on_stdout(job_id, msg, event_type)
+    call s:debug("[s:on_stdout] msg: ", string(a:msg))
+    let msg = join(a:msg, "\n")
     let v:errmsg = ""
-    silent! let req = json_decode(a:msg)
+    silent! let req = json_decode(msg)
     call s:debug("[s:on_stdout] parsed = ", req)
 
     if v:errmsg != "" || type(req) != type({})
@@ -117,40 +118,32 @@ func s:execescape(str)
     return trim(get(split(a:str, "[|\n]"), 0, ""))
 endfunc
 
-func s:on_stderr(msg)
+func s:on_stderr(job_id, msg, event_type)
     echom "[on_stderr] " string(a:msg)
 endfunc
 
 func! thcon#listen()
-    let script = s:plugindir . "/thcon-vim.sh"
-    if has("nvim")
-        let job_options = { "on_stdout": { job, data, event, -> s:on_stdout(data) } }
-        if g:thcon_debug
-            call extend(job_options, {
-            \   "on_stderr": { job, data, event, -> s:on_stderr(data) },
-            \   "env": { "DEBUG": "1" }
-            \ })
-        endif
-        let s:job = jobstart(script, job_options)
-    else
-        let job_options = { "out_cb": { chan, msg -> s:on_stdout(msg) } }
-        if g:thcon_debug
-            call extend(job_options, {
-            \   "err_cb": { chan, msg -> s:on_stderr(msg) },
-            \   "env": { "DEBUG": "1" }
-            \ })
-        endif
-        let s:job = job_start(script, job_options)
+    let argv = s:plugindir . "/thcon-vim.sh"
+    let job_options = { "on_stdout": function("s:on_stdout") }
+    if g:thcon_debug
+        call extend(job_options, {
+        \   "on_stderr": function("s:on_stderr"),
+        \   "env": { "DEBUG": "1" },
+        \ })
     endif
+
+    let s:job = thcon#job#start(argv, {
+    \ "on_stdout": function("s:on_stdout"),
+    \ "on_stderr": function("s:on_stderr"),
+    \ })
 endfunc
 
 func! s:on_vimleave()
-    if has("nvim")
-        call jobstop(s:job)
-    else
-        call s:debug("[s:on_vimleave] Stopping job: ", s:job)
-        call job_stop(s:job)
-    endif
+    call s:debug("[s:on_vimleave] Stopping job: ", s:job)
+    call thcon#job#stop(s:job)
+    call s:debug("[s:on_vimleave] waiting for: ", s:job)
+    call thcon#job#wait([s:job], 2000) " wait at-most 2 seconds for thcon-vim.sh to die
+    call s:debug("[s:on_vimleave] job is dead!")
 endfunc
 
 augroup thcon
