@@ -1,5 +1,6 @@
-" Vim/NeoVim global plugin to change colors via [thcon](https://github.com/sjbarag/thcon)
-" Last Change: 2021 Jan 04
+" Vim/NeoVim global plugin to change colors (and other settings) via [thcon](https://github.com/sjbarag/thcon)
+" Last Change: 2021 Jan 17
+" Version: 0.1.0
 " Maintainer: Sean Barag <sean@barag.org>
 " License: MIT
 
