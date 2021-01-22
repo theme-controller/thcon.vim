@@ -19,9 +19,9 @@ trap "rm -f $PIPE; trap - EXIT; exit" EXIT INT HUP TERM
 
 if [ ! -d "$PIPES_DIR" ]; then
     mkdir -p "$PIPES_DIR"
-    chmod 600 "$PIPES_DIR"
+    chmod 700 "$PIPES_DIR"
 fi
 mkfifo "$PIPE"
-chmod 600 "$PIPE"
+chmod 700 "$PIPE"
 
 tail -f "$PIPE"
