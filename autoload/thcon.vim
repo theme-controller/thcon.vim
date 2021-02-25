@@ -124,18 +124,23 @@ func s:on_stderr(job_id, msg, event_type)
 endfunc
 
 func! thcon#listen()
-    let argv = s:plugindir . "/thcon-vim.sh"
+    if has("nvim")
+        let app_name = "nvim"
+    else
+        let app_name = "vim"
+    endif
+    let argv = ["thcon-listen", app_name, "--per-process"]
+
     let job_options = { "on_stdout": function("s:on_stdout") }
     if g:thcon_debug
+        call add(argv, "--verbose")
         call extend(job_options, {
         \   "on_stderr": function("s:on_stderr"),
-        \   "env": { "DEBUG": "1" },
         \ })
     endif
+    call s:debug("[thcon#listen] argv = ", join(argv, " "))
 
-    let s:job = thcon#job#start(argv, {
-    \   "on_stdout": function("s:on_stdout"),
-    \ })
+    let s:job = thcon#job#start(join(argv, " "), job_options)
 endfunc
 
 func! s:on_vimleave()

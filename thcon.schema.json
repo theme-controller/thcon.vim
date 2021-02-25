@@ -1,6 +1,6 @@
 {
     "title": "thcon.vim payload",
-    "description": "Interface for interacting with thcon.vim via named pipe",
+    "description": "Interface for interacting with thcon.vim via thcon-listen",
     "type": "object",
     "properties": {
         "colorscheme": {
