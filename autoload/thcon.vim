@@ -148,6 +148,23 @@ augroup thcon
     autocmd VimLeavePre * call s:on_vimleave()
 augroup end
 
+" Loads settings previously applied via `thcon <mode> vim`, ensuring consistency in new instances.
+func! thcon#load()
+    if has("nvim")
+        let rc_name = "nvimrc"
+    else
+        let rc_name = "vimrc"
+    endif
+
+    let rc_path = expand("~/.local/share/thcon/" . rc_name)
+    call s:debug("[thcon#load] rc_path = ", rc_path)
+    if filereadable(rc_path)
+        exec "source " . rc_path
+    else
+        call s:debug("[thcon#load] file not found")
+    endif
+endfunc
+
 " restore 'compatible' settings; copied verbatim from `:h write-plugin`
 let &cpo = s:save_cpo
 unlet s:save_cpo
