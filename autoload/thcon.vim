@@ -123,6 +123,8 @@ func s:on_stderr(job_id, msg, event_type)
     echom "[on_stderr] " string(a:msg)
 endfunc
 
+" Listens for JSON-formatted commands provided by `thcon`, applying new settings and colorschemes
+" in the calling `vim`/`nvim` instance.
 func! thcon#listen()
     if has("nvim")
         let app_name = "nvim"
@@ -147,7 +149,7 @@ func! s:on_vimleave()
     call s:debug("[s:on_vimleave] Stopping job: ", s:job)
     call thcon#job#stop(s:job)
     call s:debug("[s:on_vimleave] waiting for: ", s:job)
-    call thcon#job#wait([s:job], 2000) " wait at-most 2 seconds for thcon-vim.sh to die
+    call thcon#job#wait([s:job], 2000) " wait at-most 2 seconds for thcon-listen to die
     call s:debug("[s:on_vimleave] job is dead!")
 endfunc
 
