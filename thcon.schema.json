@@ -3,43 +3,14 @@
     "description": "Interface for interacting with thcon.vim via thcon-listen",
     "type": "object",
     "properties": {
-        "colorscheme": {
+        "rc_file": {
             "type": "string",
-            "$comment": "Triggers `:colorscheme $value`"
-        },
-        "let": {
-            "type": "object",
-            "$comment": "Triggers `let $key=$value`"
-        },
-        "set": {
-            "type": "object",
-            "$comment": "Triggers `set $key=$value`, or `set $key`/`set no$key` for boolean values"
-        },
-        "setglobal": {
-            "type": "object",
-            "$comment": "Triggers `setglobal $key=$value`, or `setglobal $key`/`set no$key` for boolean values"
+            "required": true,
+            "$comment": "The absolute path to the file to be `:source`d."
         }
     },
     "examples": [
-        {},
-        { "colorscheme": "blue" },
-        {
-            "options": {
-                "relnum": true
-            }
-        },
-        {
-            "colorscheme": "elflord",
-            "let": {
-                "g:airline_theme": "solarized"
-            },
-            "set": {
-                "background": "dark",
-                "number": true
-            },
-            "setglobal": {
-                "verbose": 9
-            }
-        }
+        { "rc_file": "/home/alice/.local/share/thcon/vimrc" },
+        { "rc_file": "/etc/vimrc" }
     ]
 }

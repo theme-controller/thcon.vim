@@ -9,6 +9,9 @@ Also I copied this intro verbatim from [Keep a Changelog](https://keepachangelog
 ### Added
 * New `thcon#load()` function that loads previously-applied settings
 
+### Changed
+* BREAKING CHANGE: Removed support for `.let`, `.set`, `.setglobal` and `.colorscheme` in remote payload, in favor of re-`:source`ing the file at `.rc_file`.  Requires thcon@0.9.0.
+
 ## [v0.3.0 - 2021-02-25]
 ### Changed
 * Replaced thcon-vim.sh script (previously packaged with this plugin) with `thcon-listen` (packaged with `thcon` 0.7.0 and above)

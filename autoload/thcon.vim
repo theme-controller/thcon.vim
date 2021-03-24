@@ -25,8 +25,7 @@ endfunc
 
 " Handles lines printed by thcon-vim.sh
 " Lines that aren't valid JSON are ignored.  Lines that are valid JSON objects are used to
-" change colorschemes and set other arbitrary variables.  See ../thcon.schema.json for that
-" object's schema.
+" determine which file to `:source`.  See ../thcon.schema.json for that object's schema.
 func s:on_stdout(job_id, msg, event_type)
     call s:debug("[s:on_stdout] msg: ", string(a:msg))
     let msg = join(a:msg, "\n")
@@ -40,59 +39,10 @@ func s:on_stdout(job_id, msg, event_type)
         return
     endif
 
-    if has_key(req, "colorscheme")
-        let newcolor = s:execescape(req.colorscheme)
-        call s:debug("[s:on_stdout] colorscheme = " . newcolor)
-        if type(newcolor) == type("") && newcolor != ""
-            call s:debug("[s:on_stdout] setting colorscheme...")
-            execute "colorscheme " . newcolor
-        endif
-    endif
-
-    if has_key(req, "let")
-        let lets = req.let
-        if type(lets) == type({})
-            for [key, value] in items(lets)
-                let { key } = value
-            endfor
-        endif
-    endif
-
-    for set_cmd in ["set", "setglobal"]
-        if has_key(req, set_cmd)
-            let options = req[set_cmd]
-            if type(options) == type({})
-                for [key, value] in items(options)
-                    call s:set(set_cmd, key, value)
-                endfor
-            endif
-        endif
-    endfor
-endfunc
-
-" Calls :set key=value, :set key, :set nokey -- or their :setglobal variants --
-" safely, avoiding arbitrary command injection.
-" @param {string} set_cmd - one of "set" | "setglobal"
-" @param {string} key - the name of the option to be set
-" @param {*} value - the value to assign to the option
-func s:set(set_cmd, key, value)
-    if a:set_cmd != "set" && a:set_cmd != "setglobal"
-        echom "[s:set] invalid set_cmd '" . a:set_cmd . "'"
-        return
-    endif
-
-    let safe_key = s:execescape(a:key)
-
-    if a:value == v:true
-        exec a:set_cmd safe_key
-    elseif a:value == v:false
-        exec a:set_cmd "no".safe_key
-    else
-        if type(a:value) == type("")
-            let safe_value = s:execescape(a:value)
-            exec a:set_cmd safe_key."=".safe_value
-        else
-            exec a:set_cmd safe_key."=".a:value
+    if has_key(req, "rc_file")
+        let rc_file = s:exec_escape(expand(req.rc_file))
+        if filereadable(rc_file)
+            exec "source " . rc_file
         endif
     endif
 endfunc
@@ -101,7 +51,7 @@ endfunc
 " @param {string} str - the string to make safe for use with a dynamic :exec
 " @returns {string} - the substring starting at the beginning of str, running until either a command
 "                     separator or the end of the string is found.
-func s:execescape(str)
+func s:exec_escape(str)
     if type(a:str) != type("")
         return a:str
     endif
