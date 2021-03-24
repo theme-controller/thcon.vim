@@ -29,10 +29,6 @@ function! s:debug(...)
     endif
 endfunc
 
-" figure out where this script is installed, so we can reference other files included with a
-" this plugin
-let s:plugindir = resolve(expand('<sfile>:p:h'))
-
 " Handles lines printed by thcon-vim.sh
 " Lines that aren't valid JSON are ignored.  Lines that are valid JSON objects are used to
 " change colorschemes and set other arbitrary variables.  See ../thcon.schema.json for that
