@@ -9,12 +9,6 @@ if exists("g:loaded_thcon")
 endif
 let g:loaded_thcon = v:true
 
-" ensure job_start is available, or we can't start a background process and read from it
-if !has("nvim") && !has("job")
-    echom "thcon.vim requires a vim instance compiled with +job"
-    finish
-endif
-
 " don't break with 'compatible' mode; copied verbatim from `:h write-plugin`
 let s:save_cpo = &cpo
 set cpo&vim
