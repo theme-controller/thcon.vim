@@ -6,5 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Also I copied this intro verbatim from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+## [v0.3.0 - 2021-02-25]
 ### Changed
 * Replaced thcon-vim.sh script (previously packaged with this plugin) with `thcon-listen` (packaged with `thcon` 0.7.0 and above)
