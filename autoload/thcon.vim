@@ -1,6 +1,6 @@
-" Vim/NeoVim global plugin to change colors (and other settings) via [thcon](https://github.com/sjbarag/thcon)
-" Last Change: 2021 Mar 24
-" Version: 0.4.0
+" Vim/NeoVim global plugin to source a file in all instances via [thcon](https://github.com/theme-controller/thcon)
+" Last Change: 2022 May 21
+" Version: 0.5.0
 " Maintainer: Sean Barag <sean@barag.org>
 " License: MIT
 
@@ -71,7 +71,7 @@ func! thcon#listen()
     else
         let app_name = "vim"
     endif
-    let argv = ["thcon-listen", app_name, "--per-process"]
+    let argv = ["thcon", "listen", app_name, "--per-process"]
 
     let job_options = { "on_stdout": function("s:on_stdout") }
     if g:thcon_debug
@@ -99,9 +99,13 @@ augroup thcon
 augroup end
 
 " Loads settings previously applied via `thcon <mode> vim`, ensuring consistency in new instances.
-func! thcon#load()
+func! thcon#load(is_lua)
     if has("nvim")
-        let rc_name = "nvimrc"
+        if a:is_lua
+            let rc_name = "neovim.lua"
+        else
+            let rc_name = "neovimrc"
+        endif
     else
         let rc_name = "vimrc"
     endif
